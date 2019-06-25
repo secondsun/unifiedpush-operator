@@ -135,6 +135,18 @@
   revision = "026c730a0dcc5d11f93f1cf1cc65b01247ea7b6f"
   version = "v4.5.0"
 
+  digest = "1:9a51e61c068f1e06fac2688e69d2f7624809c9c922fc562548d3860144a5fdd2"
+  name = "github.com/enmasseproject/enmasse"
+  packages = [
+    "pkg/apis/enmasse",
+    "pkg/apis/enmasse/v1beta1",
+    "pkg/apis/user",
+    "pkg/apis/user/v1beta1",
+  ]
+  pruneopts = "NT"
+  revision = "daea88ac08671478bfa5d2c6609112d0ae4a4abb"
+  version = "0.28.1"
+
 [[projects]]
   digest = "1:81466b4218bf6adddac2572a30ac733a9255919bc2f470b4827a317bd4ee1756"
   name = "github.com/ghodss/yaml"
@@ -1157,6 +1169,8 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/enmasseproject/enmasse/pkg/apis/enmasse/v1beta1",
+    "github.com/enmasseproject/enmasse/pkg/apis/user/v1beta1",
     "github.com/go-logr/logr",
     "github.com/go-openapi/spec",
     "github.com/google/uuid",

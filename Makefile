@@ -19,6 +19,12 @@ TEST_COMPILE_OUTPUT = build/_output/bin/unifiedpush-operator-test
 code/run: code/gen
 	operator-sdk up local
 
+.PHONY: code/debug
+code/debug: code/gen
+	export WATCH_NAMESPACE=unifiedpush
+	dlv --listen=:2345 --headless=true --api-version=2 exec ./build/_output/bin/unifiedpush-operator-local  -- 
+
+
 .PHONY: code/gen
 code/gen: code/fix
 	operator-sdk generate k8s

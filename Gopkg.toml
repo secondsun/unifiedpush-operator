@@ -73,3 +73,7 @@ required = [
   [[prune.project]]
     name = "k8s.io/gengo"
     non-go = false
+
+[[constraint]]
+  name = "github.com/enmasseproject/enmasse"
+  version = "0.28.1"

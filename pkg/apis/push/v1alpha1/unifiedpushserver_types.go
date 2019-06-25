@@ -14,6 +14,9 @@ type UnifiedPushServerSpec struct {
 
 	// Backups is an array of configs that will be used to create CronJob resource instances
 	Backups []UnifiedPushServerBackup `json:"backups,omitempty"`
+
+	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
+	UseMessageBroker bool `json:"useMessageBroker,omitempty"`
 }
 
 // UnifiedPushServerStatus defines the observed state of UnifiedPushServer
