@@ -1,9 +1,9 @@
 apiVersion: user.enmasse.io/v1beta1
 kind: MessagingUser
 metadata:
-  name: ups.user1
+  name: ups.upsuser
 spec:
-  username: user1
+  username: upsuser
   authentication:
     type: password
     password: cGFzc3dvcmQ= # Base64 encoded

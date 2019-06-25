@@ -246,7 +246,11 @@ func (r *ReconcileUnifiedPushServer) Reconcile(request reconcile.Request) (recon
 			return reconcile.Result{}, err
 		} else if !foundAddressSpace.Status.IsReady {
 			return reconcile.Result{Requeue: true}, nil
-		} /*Address space exists and is ready*/
+		} else {
+			reqLogger.Info("Found AddressSpace for UPS")
+		}
+
+		/*Address space exists and is ready*/
 
 		for _, status := range foundAddressSpace.Status.EndpointStatus {
 			if status.Name == "messaging" { //magic value
@@ -269,10 +273,14 @@ func (r *ReconcileUnifiedPushServer) Reconcile(request reconcile.Request) (recon
 			if err != nil {
 				return reconcile.Result{}, err
 			}
-			return reconcile.Result{Requeue: true}, nil
+			return reconcile.Result{RequeueAfter: time.Second * 5}, nil
 		} else if err != nil {
 			return reconcile.Result{}, err
-		} /*User exists and is ready*/
+		} else {
+			reqLogger.Info("Found Messaging User for UPS")
+		}
+
+		/*User exists and is ready*/
 		//check that addresses exist
 		//queues
 		queues := []string{"APNsPushMessageQueue", "APNsTokenBatchQueue", "GCMPushMessageQueue", "GCMTokenBatchQueue", "WNSPushMessageQueue", "WNSTokenBatchQueue", "MetricsQueue", "TriggerMetricCollectionQueue", "TriggerVariantMetricCollectionQueue", "BatchLoadedQueue", "AllBatchesLoadedQueue", "FreeServiceSlotQueue"}
@@ -294,12 +302,18 @@ func (r *ReconcileUnifiedPushServer) Reconcile(request reconcile.Request) (recon
 				}
 				requeueCreate = true
 			} else if err != nil {
+				reqLogger.Info("Queue Error")
 				return reconcile.Result{}, err
+			} else if !foundQueue.Status.IsReady {
+				reqLogger.Info("Queue Not ready", "Queue.Name", foundQueue.Name)
+				requeueCreate = true
 			}
 		}
 
 		if requeueCreate {
-			return reconcile.Result{Requeue: true}, nil
+			return reconcile.Result{RequeueAfter: time.Second * 5}, nil
+		} else {
+			reqLogger.Info("Found All queues  for UPS")
 		}
 
 		//topics
@@ -327,6 +341,8 @@ func (r *ReconcileUnifiedPushServer) Reconcile(request reconcile.Request) (recon
 
 		if requeueCreate {
 			return reconcile.Result{Requeue: true}, nil
+		} else {
+			reqLogger.Info("Found All queues and topics for UPS")
 		}
 
 	}

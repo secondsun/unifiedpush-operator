@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	pushv1alpha1 "github.com/aerogear/unifiedpush-operator/pkg/apis/push/v1alpha1"
 	enmassev1beta "github.com/enmasseproject/enmasse/pkg/apis/enmasse/v1beta1"
 	messaginguserv1beta "github.com/enmasseproject/enmasse/pkg/apis/user/v1beta1"
@@ -12,12 +14,14 @@ import (
 )
 
 func newQueue(cr *pushv1alpha1.UnifiedPushServer, address string) *enmassev1beta.Address {
-	name := fmt.Sprintf("ups-space.queue-%s", strings.ToLower(address))
+	name := fmt.Sprintf("ups.%s", strings.ToLower(address))
 	return &enmassev1beta.Address{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: cr.Namespace,
-			Labels:    labels(cr, name),
+			Labels: map[string]string{
+				"app": cr.Name,
+			},
 		},
 		Spec: enmassev1beta.AddressSpec{
 			Address: address,
@@ -29,12 +33,14 @@ func newQueue(cr *pushv1alpha1.UnifiedPushServer, address string) *enmassev1beta
 
 func newTopic(cr *pushv1alpha1.UnifiedPushServer, address string) *enmassev1beta.Address {
 
-	name := fmt.Sprintf("ups-space.topic-%s", strings.ToLower(strings.Replace(address, "topic/", "", 1))) //a topic has a prefix.
+	name := fmt.Sprintf("ups.%s", strings.ToLower(strings.Replace(address, "topic/", "", 1))) //a topic has a prefix.
 	return &enmassev1beta.Address{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: cr.Namespace,
-			Labels:    labels(cr, name),
+			Labels: map[string]string{
+				"app": cr.Name,
+			},
 		},
 		Spec: enmassev1beta.AddressSpec{
 			Address: address,
@@ -44,22 +50,48 @@ func newTopic(cr *pushv1alpha1.UnifiedPushServer, address string) *enmassev1beta
 	}
 }
 
-func newMessagingUser(cr *pushv1alpha1.UnifiedPushServer) *messaginguserv1beta.MessagingUser {
+func newMessagingUser(cr *pushv1alpha1.UnifiedPushServer) *unstructured.Unstructured {
 	password := "password"
-	encoded := make([]byte, base64.StdEncoding.EncodedLen(len(password)))
-	base64.StdEncoding.Encode(encoded, []byte(password))
+	encoded := base64.StdEncoding.EncodeToString([]byte(password))
 
-	return &messaginguserv1beta.MessagingUser{
+	return &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "user.enmasse.io/v1beta1",
+			"kind":       "MessagingUser",
+			"metadata": map[string]interface{}{
+				"name": "ups.upsuser",
+				"labels": map[string]interface{}{
+					"app":     cr.Name,
+					"service": fmt.Sprintf("%s-%s", cr.Name, suffix),
+				},
+			},
+			"spec":map[string]interface{}{
+				"username": "upsuser",
+				"authentication":map[string]interface{}{
+					"type":     "password",
+					"password": encoded,
+				},
+				"authorization":map[string]interface{}{
+					"addresses": []string{
+						"*",
+					},
+					"operations": []string{
+						"send",
+						"recv",
+					},
+				},
+			},
+		}
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "ups-space.upsuser",
+			Name:      "ups.upsuser",
 			Namespace: cr.Namespace,
-			Labels:    labels(cr, "ups-space.upsuser"),
+			Labels:    labels(cr, "ups.upsuser"),
 		},
 		Spec: messaginguserv1beta.MessagingUserSpec{
 			Username: "upsuser",
 			Authentication: messaginguserv1beta.AuthenticationSpec{
 				Type:     "password",
-				Password: encoded,
+				Password: []byte(encoded),
 			},
 			Authorization: []messaginguserv1beta.AuthorizationSpec{
 				messaginguserv1beta.AuthorizationSpec{
@@ -79,9 +111,9 @@ func newMessagingUser(cr *pushv1alpha1.UnifiedPushServer) *messaginguserv1beta.M
 func newAddressSpace(cr *pushv1alpha1.UnifiedPushServer) *enmassev1beta.AddressSpace {
 	return &enmassev1beta.AddressSpace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "ups-space",
+			Name:      "ups",
 			Namespace: cr.Namespace,
-			Labels:    labels(cr, "ups-space"),
+			Labels:    labels(cr, "ups"),
 		},
 		Spec: enmassev1beta.AddressSpaceSpec{
 			Type: "brokered",

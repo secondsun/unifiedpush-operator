@@ -7,6 +7,7 @@ package v1beta1
 
 import (
 	"encoding/json"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -123,7 +124,12 @@ type Address struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec AddressSpec `json:"spec"`
+	Spec   AddressSpec   `json:"spec"`
+	Status AddressStatus `json:"status"`
+}
+
+type AddressStatus struct {
+	IsReady bool `json:"isReady"`
 }
 
 type AddressSpec struct {
