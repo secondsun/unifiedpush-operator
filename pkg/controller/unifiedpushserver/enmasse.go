@@ -9,7 +9,6 @@ import (
 
 	pushv1alpha1 "github.com/aerogear/unifiedpush-operator/pkg/apis/push/v1alpha1"
 	enmassev1beta "github.com/enmasseproject/enmasse/pkg/apis/enmasse/v1beta1"
-	messaginguserv1beta "github.com/enmasseproject/enmasse/pkg/apis/user/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -59,48 +58,28 @@ func newMessagingUser(cr *pushv1alpha1.UnifiedPushServer) *unstructured.Unstruct
 			"apiVersion": "user.enmasse.io/v1beta1",
 			"kind":       "MessagingUser",
 			"metadata": map[string]interface{}{
-				"name": "ups.upsuser",
+				"name":      "ups.upsuser",
+				"namespace": cr.Namespace,
 				"labels": map[string]interface{}{
 					"app":     cr.Name,
-					"service": fmt.Sprintf("%s-%s", cr.Name, suffix),
+					"service": fmt.Sprintf("%s-%s", cr.Name, "ups.upsuser"),
 				},
 			},
-			"spec":map[string]interface{}{
+			"spec": map[string]interface{}{
 				"username": "upsuser",
-				"authentication":map[string]interface{}{
+				"authentication": map[string]interface{}{
 					"type":     "password",
 					"password": encoded,
 				},
-				"authorization":map[string]interface{}{
-					"addresses": []string{
-						"*",
-					},
-					"operations": []string{
-						"send",
-						"recv",
-					},
-				},
-			},
-		}
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "ups.upsuser",
-			Namespace: cr.Namespace,
-			Labels:    labels(cr, "ups.upsuser"),
-		},
-		Spec: messaginguserv1beta.MessagingUserSpec{
-			Username: "upsuser",
-			Authentication: messaginguserv1beta.AuthenticationSpec{
-				Type:     "password",
-				Password: []byte(encoded),
-			},
-			Authorization: []messaginguserv1beta.AuthorizationSpec{
-				messaginguserv1beta.AuthorizationSpec{
-					Addresses: []string{
-						"*",
-					},
-					Operations: []string{
-						"send",
-						"recv",
+				"authorization": []map[string]interface{}{
+					map[string]interface{}{
+						"addresses": []string{
+							"*",
+						},
+						"operations": []string{
+							"send",
+							"recv",
+						},
 					},
 				},
 			},
