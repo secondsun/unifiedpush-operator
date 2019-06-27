@@ -16,11 +16,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -263,44 +260,23 @@ func (r *ReconcileUnifiedPushServer) Reconcile(request reconcile.Request) (recon
 
 		//check that user exists
 		foundUser := newMessagingUser(instance)
-		userRes := schema.GroupVersionResource{Group: "user.enmasse.io", Version: "v1beta1", Resource: "messagingusers"}
 
 		// Set UnifiedPushServer instance as the owner and controller
 		if err := controllerutil.SetControllerReference(instance, foundUser, r.scheme); err != nil {
-			reqLogger.Info("Error Setting User OwnerRefs")
 			return reconcile.Result{}, err
 		}
 
-		dynamicConfig, err := config.GetConfig()
-		if err != nil {
-			return reconcile.Result{}, err
-		}
-
-		dynamicConfig.ContentType = "application/json"
-		dynamicConfig.ContentConfig.ContentType = "application/json"
-		dynamicConfig.ContentConfig.AcceptContentTypes = "application/json"
-
-		dynamicClient, err := dynamic.NewForConfig(dynamicConfig)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
-
-		_, err = dynamicClient.Resource(userRes).Namespace(instance.Namespace).Get(foundUser.Object["metadata"].(map[string]interface{})["name"].(string), metav1.GetOptions{})
-
+		err = r.client.Get(context.TODO(), types.NamespacedName{Name: foundUser.Name, Namespace: foundUser.Namespace}, foundUser)
 		if err != nil && errors.IsNotFound(err) {
-			reqLogger.Info("Creating a new MessagingUser", "MessagingUser.Namespace", instance.Namespace, "MessagingUser.Name", foundUser.Object["metadata"].(map[string]interface{})["name"].(string))
-
-			_, err = dynamicClient.Resource(userRes).Namespace(instance.Namespace).Create(foundUser, metav1.CreateOptions{})
+			reqLogger.Info("Creating a new MessagingUser", "MessagingUser.Namespace", foundUser.Namespace, "MessagingUser.Name", foundUser.Name)
+			err = r.client.Create(context.TODO(), foundUser)
 			if err != nil {
-				//return reconcile.Result{}, err
-				panic(err)
+				return reconcile.Result{}, err
 			}
-			return reconcile.Result{RequeueAfter: time.Second * 5}, nil
+			return reconcile.Result{Requeue: true}, nil
 		} else if err != nil {
 			return reconcile.Result{}, err
-		} else {
-			reqLogger.Info("Found Messaging User for UPS")
-		}
+		} /*User exists and is ready*/
 
 		/*User exists and is ready*/
 		//check that addresses exist

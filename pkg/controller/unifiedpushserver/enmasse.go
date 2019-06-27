@@ -1,14 +1,12 @@
 package unifiedpushserver
 
 import (
-	"encoding/base64"
 	"fmt"
 	"strings"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
 	pushv1alpha1 "github.com/aerogear/unifiedpush-operator/pkg/apis/push/v1alpha1"
 	enmassev1beta "github.com/enmasseproject/enmasse/pkg/apis/enmasse/v1beta1"
+	messaginguserv1beta "github.com/enmasseproject/enmasse/pkg/apis/user/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -49,37 +47,29 @@ func newTopic(cr *pushv1alpha1.UnifiedPushServer, address string) *enmassev1beta
 	}
 }
 
-func newMessagingUser(cr *pushv1alpha1.UnifiedPushServer) *unstructured.Unstructured {
-	password := "password"
-	encoded := base64.StdEncoding.EncodeToString([]byte(password))
+func newMessagingUser(cr *pushv1alpha1.UnifiedPushServer) *messaginguserv1beta.MessagingUser {
+	password := []byte("password")
 
-	return &unstructured.Unstructured{
-		Object: map[string]interface{}{
-			"apiVersion": "user.enmasse.io/v1beta1",
-			"kind":       "MessagingUser",
-			"metadata": map[string]interface{}{
-				"name":      "ups.upsuser",
-				"namespace": cr.Namespace,
-				"labels": map[string]interface{}{
-					"app":     cr.Name,
-					"service": fmt.Sprintf("%s-%s", cr.Name, "ups.upsuser"),
-				},
+	return &messaginguserv1beta.MessagingUser{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "ups-space.upsuser",
+			Namespace: cr.Namespace,
+			Labels:    labels(cr, "ups-space.upsuser"),
+		},
+		Spec: messaginguserv1beta.MessagingUserSpec{
+			Username: "upsuser",
+			Authentication: messaginguserv1beta.AuthenticationSpec{
+				Type:     "password",
+				Password: password,
 			},
-			"spec": map[string]interface{}{
-				"username": "upsuser",
-				"authentication": map[string]interface{}{
-					"type":     "password",
-					"password": encoded,
-				},
-				"authorization": []map[string]interface{}{
-					map[string]interface{}{
-						"addresses": []string{
-							"*",
-						},
-						"operations": []string{
-							"send",
-							"recv",
-						},
+			Authorization: []messaginguserv1beta.AuthorizationSpec{
+				messaginguserv1beta.AuthorizationSpec{
+					Addresses: []string{
+						"*",
+					},
+					Operations: []string{
+						"send",
+						"recv",
 					},
 				},
 			},
