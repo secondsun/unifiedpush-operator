@@ -128,14 +128,7 @@
   version = "v2.9.3"
 
 [[projects]]
-  digest = "1:448bf60e9dce6d5fd9dfa8fd9eb9a23163424ff4e4f142456405781e942e3998"
-  name = "github.com/evanphx/json-patch"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "026c730a0dcc5d11f93f1cf1cc65b01247ea7b6f"
-  version = "v4.5.0"
-
-  digest = "1:9a51e61c068f1e06fac2688e69d2f7624809c9c922fc562548d3860144a5fdd2"
+  digest = "1:c6d6737d5ac21184b021017c166b4b261871f67949614b55969cf02a6048f674"
   name = "github.com/enmasseproject/enmasse"
   packages = [
     "pkg/apis/enmasse",
@@ -144,8 +137,16 @@
     "pkg/apis/user/v1beta1",
   ]
   pruneopts = "NT"
-  revision = "daea88ac08671478bfa5d2c6609112d0ae4a4abb"
-  version = "0.28.1"
+  revision = "b0892bfeeb23b58320a7b9ad5bd147824ba02810"
+  version = "0.28.2"
+
+[[projects]]
+  digest = "1:448bf60e9dce6d5fd9dfa8fd9eb9a23163424ff4e4f142456405781e942e3998"
+  name = "github.com/evanphx/json-patch"
+  packages = ["."]
+  pruneopts = "NT"
+  revision = "026c730a0dcc5d11f93f1cf1cc65b01247ea7b6f"
+  version = "v4.5.0"
 
 [[projects]]
   digest = "1:81466b4218bf6adddac2572a30ac733a9255919bc2f470b4827a317bd4ee1756"
