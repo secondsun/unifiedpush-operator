@@ -76,4 +76,5 @@ required = [
 
 [[constraint]]
   name = "github.com/enmasseproject/enmasse"
-  version = "0.28.2"
+  source = "https://github.com/secondsun/enmasse.git"
+  branch = "address_type_update"

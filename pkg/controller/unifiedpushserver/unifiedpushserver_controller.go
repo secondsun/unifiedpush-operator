@@ -349,6 +349,7 @@ func (r *ReconcileUnifiedPushServer) Reconcile(request reconcile.Request) (recon
 	//#region Postgres PVC
 	persistentVolumeClaim, err := newPostgresqlPersistentVolumeClaim(instance)
 	if err != nil {
+		reqLogger.Info("Error making PVC")
 		return reconcile.Result{}, err
 	}
 
@@ -370,7 +371,6 @@ func (r *ReconcileUnifiedPushServer) Reconcile(request reconcile.Request) (recon
 		return reconcile.Result{}, err
 	}
 	//#endregion
-
 	//#region Postgres DeploymentConfig
 	postgresqlDeploymentConfig, err := newPostgresqlDeploymentConfig(instance)
 	if err != nil {

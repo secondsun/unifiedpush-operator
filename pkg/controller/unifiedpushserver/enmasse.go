@@ -52,9 +52,9 @@ func newMessagingUser(cr *pushv1alpha1.UnifiedPushServer) *messaginguserv1beta.M
 
 	return &messaginguserv1beta.MessagingUser{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "ups-space.upsuser",
+			Name:      "ups.upsuser",
 			Namespace: cr.Namespace,
-			Labels:    labels(cr, "ups-space.upsuser"),
+			Labels:    labels(cr, "ups.upsuser"),
 		},
 		Spec: messaginguserv1beta.MessagingUserSpec{
 			Username: "upsuser",
