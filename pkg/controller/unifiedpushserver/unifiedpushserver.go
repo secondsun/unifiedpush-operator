@@ -92,8 +92,15 @@ func newOauthProxyImageStream(cr *pushv1alpha1.UnifiedPushServer) (*imagev1.Imag
 func buildEnv(cr *pushv1alpha1.UnifiedPushServer, addressSpaceURL string) []corev1.EnvVar {
 	var env = []corev1.EnvVar{
 		{
-			Name:  "POSTGRES_SERVICE_HOST",
-			Value: fmt.Sprintf("%s-postgresql", cr.Name),
+			Name: "POSTGRES_SERVICE_HOST",
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					Key: "POSTGRES_HOST",
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: fmt.Sprintf("%s-postgresql", cr.Name),
+					},
+				},
+			},
 		},
 		{
 			Name:  "POSTGRES_SERVICE_PORT",
@@ -103,7 +110,7 @@ func buildEnv(cr *pushv1alpha1.UnifiedPushServer, addressSpaceURL string) []core
 			Name: "POSTGRES_USER",
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &corev1.SecretKeySelector{
-					Key: "database-user",
+					Key: "POSTGRES_USERNAME",
 					LocalObjectReference: corev1.LocalObjectReference{
 						Name: fmt.Sprintf("%s-postgresql", cr.Name),
 					},
@@ -114,7 +121,7 @@ func buildEnv(cr *pushv1alpha1.UnifiedPushServer, addressSpaceURL string) []core
 			Name: "POSTGRES_PASSWORD",
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &corev1.SecretKeySelector{
-					Key: "database-password",
+					Key: "POSTGRES_PASSWORD",
 					LocalObjectReference: corev1.LocalObjectReference{
 						Name: fmt.Sprintf("%s-postgresql", cr.Name),
 					},
@@ -125,7 +132,7 @@ func buildEnv(cr *pushv1alpha1.UnifiedPushServer, addressSpaceURL string) []core
 			Name: "POSTGRES_DATABASE",
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &corev1.SecretKeySelector{
-					Key: "database-name",
+					Key: "POSTGRES_DATABASE",
 					LocalObjectReference: corev1.LocalObjectReference{
 						Name: fmt.Sprintf("%s-postgresql", cr.Name),
 					},
